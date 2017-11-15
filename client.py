@@ -5,6 +5,10 @@ from socket import socket, error, timeout
 class FtpClient(object):
     """
     FTP client that can be used for both non-secure and secure connections.
+
+    Attributes:
+    host (str): The host to which the client is connected to, if connected,
+                None otherwise.
     """
 
     class TimeoutException(timeout):
@@ -32,10 +36,11 @@ class FtpClient(object):
     def _reset_socket(self, drop_existing=False):
         if drop_existing:
             print('Dropping existing connection to {}:{}'
-                  .format(*self._socket.getpeername()))
+                  .format(self.host, FtpClient.PORT))
             self._socket.close()
         self._socket = socket()
         self._socket.settimeout(FtpClient.SOCKET_TIMEOUT_SECONDS)
+        self.host = None
 
     def connect(self, host):
         """Connect to an FTP(S) server in the specified host.
@@ -49,15 +54,17 @@ class FtpClient(object):
             The welcome message from the host if successful.
         """
         host = host or 'localhost'
+
+        if self.host is not None:
+            self._reset_socket(drop_existing=True)
+            return self.connect(host)
+
         try:
             print 'Connecting to {}:{}'.format(host, FtpClient.PORT)
             self._socket.connect((host, FtpClient.PORT))
+            self.host = host
         except timeout:
             raise FtpClient.TimeoutException(host)
-        except error as (number, string):
-            if number == errno.EISCONN:
-                self._reset_socket(drop_existing=True)
-                self.connect(host)
 
         data = self._socket.recv(FtpClient.SOCKET_RCV_BYTES)
         return data

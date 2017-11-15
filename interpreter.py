@@ -13,6 +13,12 @@ class FtpsInterpreter(Cmd):
         self.prompt = 'ftp(s) > '
         self._ftp_client = FtpClient()
 
+    def _update_prompt(self):
+        if self._ftp_client.host is not None:
+            self.prompt = 'ftp(s) {} > '.format(self._ftp_client.host)
+        else:
+            self.prompt = 'ftp(s) > '
+
     def do_connect(self, host):
         """Command to connect to an FTP(S) server in the specified host.
 
@@ -26,3 +32,4 @@ class FtpsInterpreter(Cmd):
             print response
         except FtpClient.TimeoutException as e:
             print e.msg
+        self._update_prompt()
