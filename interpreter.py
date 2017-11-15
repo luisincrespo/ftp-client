@@ -4,16 +4,25 @@ from client import FtpClient
 
 
 class FtpsInterpreter(Cmd):
+    """
+    FTP command line utility that supports non-secure and secure connections.
+    """
     def __init__(self):
         Cmd.__init__(self)
-        self.intro = 'Simple FTPS Client'
-        self.prompt = 'ftps > '
+        self.intro = 'FTP(S) Client'
+        self.prompt = 'ftp(s) > '
         self._ftp_client = FtpClient()
 
     def do_connect(self, host):
+        """Command to connect to an FTP(S) server in the specified host.
+
+        Args:
+            host (str): The host to connect to. If a falsy
+                        value is passed it defaults to
+                        `localhost`.
         """
-        Connect to the specified FTP(S) server.
-        If no host is specified it'll default to localhost.
-        """
-        response = self._ftp_client.connect(host)
-        print response
+        try:
+            response = self._ftp_client.connect(host)
+            print response
+        except FtpClient.TimeoutException as e:
+            print e.msg
