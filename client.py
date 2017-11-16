@@ -1,5 +1,4 @@
-import errno
-from socket import socket, error, timeout
+from socket import socket, timeout
 
 
 class FtpClient(object):
