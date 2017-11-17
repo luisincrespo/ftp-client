@@ -1,4 +1,4 @@
-from socket import socket, timeout
+import socket
 
 
 class FtpClient(object):
@@ -10,7 +10,7 @@ class FtpClient(object):
                 None otherwise.
     """
 
-    class TimeoutException(timeout):
+    class TimeoutException(socket.timeout):
         """
         Exception raised when the FTP client socket connection has timed out.
 
@@ -37,7 +37,7 @@ class FtpClient(object):
             print('Dropping existing connection to {}:{}'
                   .format(self.host, FtpClient.PORT))
             self._socket.close()
-        self._socket = socket()
+        self._socket = socket.socket()
         self._socket.settimeout(FtpClient.SOCKET_TIMEOUT_SECONDS)
         self.host = None
 
@@ -62,7 +62,7 @@ class FtpClient(object):
             print 'Connecting to {}:{}'.format(host, FtpClient.PORT)
             self._socket.connect((host, FtpClient.PORT))
             self.host = host
-        except timeout:
+        except socket.timeout:
             raise FtpClient.TimeoutException(host)
 
         data = self._socket.recv(FtpClient.SOCKET_RCV_BYTES)
