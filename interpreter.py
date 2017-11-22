@@ -26,8 +26,7 @@ class FtpsInterpreter(Cmd):
         Command to connect to an FTP(S) server in the specified host.
 
         Args:
-            host (str): The host to connect to. Defaults to `localhost`.
-                        (Optional)
+            host (str): The host to connect to.
         """
         try:
             response = self._ftp_client.connect(host)
@@ -61,8 +60,7 @@ class FtpsInterpreter(Cmd):
         Command to perform LIST command on the connected FTP(S) host.
 
         Args:
-            filename (str): Name of file or directory to retrieve info
-                            for. Defaults to the current directory. (Optional)
+            filename (str): Name of file or directory to retrieve info for.
         """
         try:
             response = self._ftp_client.list(filename)

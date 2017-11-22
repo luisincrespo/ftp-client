@@ -91,14 +91,13 @@ class FtpClient(object):
         if self.user is None:
             raise FtpClient.NotAuthenticatedException()
 
-    def connect(self, host):
+    def connect(self, host=None):
         """
         Connect to an FTP(S) server in the specified host.
 
         Args:
-            host (str): The host to connect to. If a falsy
-                        value is passed it defaults to
-                        `localhost`.
+            host (str): The host to connect to. Falsy values
+                        default to `localhost`. (Optional)
 
         Returns:
             The welcome message from the host if successful.
@@ -149,7 +148,7 @@ class FtpClient(object):
 
         Args:
             filename (str): Name of file or directory to retrieve info
-                            for. Defaults to the current directory. (Optional)
+                            for. (Optional)
 
         Returns:
             Information about the specified file or directory, or the current
@@ -158,7 +157,7 @@ class FtpClient(object):
         self._check_is_connected()
         self._check_is_authenticated()
 
-        if filename:
+        if filename is not None:
             self._send_command(FtpClient.LIST_COMMAND, filename)
         else:
             self._send_command(FtpClient.LIST_COMMAND)
