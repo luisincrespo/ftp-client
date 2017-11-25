@@ -39,8 +39,13 @@ class FtpsInterpreter(Cmd):
         """
         Command to login with user and password in the connected FTP(S) host.
         """
-        user = raw_input('User: ')
-        password = raw_input('Password: ')
+        user = ''
+        while not user:
+            user = raw_input('User: ')
+        password = ''
+        while not password:
+            password = raw_input('Password: ')
+
         try:
             response = self._ftp_client.login(user, password)
             print response
@@ -50,9 +55,7 @@ class FtpsInterpreter(Cmd):
             print e.msg
             print('Please connect to an FTP(S) server using the `connect`'
                   ' command.')
-        except FtpClient.AuthenticationException as e:
-            print e.msg
-            print('Failed to authenticate. Please try again.')
+
         self._update_prompt()
 
     def do_list(self, filename):

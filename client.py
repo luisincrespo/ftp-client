@@ -43,14 +43,6 @@ class FtpClient(object):
             super(FtpClient.NotAuthenticatedException, self).__init__()
             self.msg = 'Not authenticated.'
 
-    class AuthenticationException(Exception):
-        """
-        Exception raised when an authentication in the FTP(S) host fails.
-        """
-        def __init__(self):
-            super(FtpClient.AuthenticationException, self).__init__()
-            self.msg = 'Authentication failed.'
-
     PORT = 21
     SOCKET_TIMEOUT_SECONDS = 5
     SOCKET_RCV_BYTES = 4096
@@ -168,10 +160,11 @@ class FtpClient(object):
         self._send_command(FtpClient.PASS_COMMAND, password)
         data = self._receive_data()
 
-        if data.startswith('530'):
-            raise FtpClient.AuthenticationException()
+        if data.startswith('230'):
+            self.user = user
+        elif data.startswith('530'):
+            self.user = None
 
-        self.user = user
         return data
 
     def list(self, filename=None):
