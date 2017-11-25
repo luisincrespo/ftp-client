@@ -196,7 +196,11 @@ class FtpClient(object):
         else:
             self._send_command(FtpClient.LIST_COMMAND)
 
-        data = data + self._receive_data()
-        data = data + self._receive_data(data_connection=True)
-        data = data + self._receive_data()
+        list_data = self._receive_data()
+        data = data + list_data
+
+        if not list_data.startswith('550'):
+            data = data + self._receive_data(data_connection=True)
+            data = data + self._receive_data()
+
         return data
