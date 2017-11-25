@@ -58,30 +58,45 @@ class FtpClient(object):
     LIST_COMMAND = 'LIST'
     USER_COMMAND = 'USER'
     PASS_COMMAND = 'PASS'
+    EPRT_COMMAND = 'EPRT'
 
-    def __init__(self):
-        self._reset_socket()
+    def __init__(self, debug=False):
+        self._debug = debug
+        self._reset_sockets()
 
-    def _reset_socket(self, drop_existing=False):
+    def _reset_sockets(self, drop_existing=False):
         if drop_existing:
             print('Dropping existing connection to {}:{}'
                   .format(self.host, FtpClient.PORT))
-            self._socket.close()
-        self._socket = socket.socket()
-        self._socket.settimeout(FtpClient.SOCKET_TIMEOUT_SECONDS)
+            self._command_socket.close()
+            self._data_socket.close()
+        self._command_socket = socket.socket()
+        self._command_socket.settimeout(FtpClient.SOCKET_TIMEOUT_SECONDS)
         self.host = None
         self.user = None
+        self._data_socket = socket.socket()
+        self._data_connection = None
+
+    def _log(self, info):
+        if self._debug:
+            print('debug: {}'.format(info))
 
     def _send_command(self, command, *args):
         for a in args:
             command = '{} {}'.format(command, a)
         try:
-            self._socket.sendall('{}\r\n'.format(command))
+            self._log('sending command - {}'.format(command))
+            self._command_socket.sendall('{}\r\n'.format(command))
         except socket.timeout:
             raise FtpClient.TimeoutException(self.host)
 
-    def _receive_data(self):
-        return self._socket.recv(FtpClient.SOCKET_RCV_BYTES)
+    def _receive_data(self, data_connection=False):
+        if data_connection:
+            data = self._data_connection.recv(FtpClient.SOCKET_RCV_BYTES)
+        else:
+            data = self._command_socket.recv(FtpClient.SOCKET_RCV_BYTES)
+        self._log('received data - {}'.format(data))
+        return data
 
     def _check_is_connected(self):
         if self.host is None:
@@ -90,6 +105,23 @@ class FtpClient(object):
     def _check_is_authenticated(self):
         if self.user is None:
             raise FtpClient.NotAuthenticatedException()
+
+    def _open_data_socket(self):
+        self._data_address, self._data_port = \
+            self._command_socket.getsockname()
+        self._data_port = self._data_port + 1
+        self._data_socket.bind(('', self._data_port))
+        self._data_socket.listen(1)
+
+    def _open_data_connection(self):
+        if self._data_connection is None:
+            self._open_data_socket()
+        self._send_command(FtpClient.EPRT_COMMAND, '|1|{}|{}|'
+                           .format(self._data_address, self._data_port))
+        self._data_connection, address = self._data_socket.accept()
+        self._log('opened data connection on {}'.format(address))
+        data = self._receive_data()
+        return data
 
     def connect(self, host=None):
         """
@@ -105,12 +137,12 @@ class FtpClient(object):
         host = host or 'localhost'
 
         if self.host is not None:
-            self._reset_socket(drop_existing=True)
+            self._reset_sockets(drop_existing=True)
             return self.connect(host)
 
         try:
             print 'Connecting to {}:{}'.format(host, FtpClient.PORT)
-            self._socket.connect((host, FtpClient.PORT))
+            self._command_socket.connect((host, FtpClient.PORT))
             self.host = host
         except socket.timeout:
             raise FtpClient.TimeoutException(host)
@@ -157,9 +189,14 @@ class FtpClient(object):
         self._check_is_connected()
         self._check_is_authenticated()
 
+        data = self._open_data_connection()
+
         if filename is not None:
             self._send_command(FtpClient.LIST_COMMAND, filename)
         else:
             self._send_command(FtpClient.LIST_COMMAND)
 
-        return self._receive_data()
+        data = data + self._receive_data()
+        data = data + self._receive_data(data_connection=True)
+        data = data + self._receive_data()
+        return data
