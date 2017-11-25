@@ -167,6 +167,9 @@ class FtpClient(object):
 
         return data
 
+    def logout(self):
+        self.user = None
+
     def list(self, filename=None):
         """
         Perform LIST command on connected host.
