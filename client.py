@@ -61,6 +61,7 @@ class FtpClient(object):
     EPRT_COMMAND = 'EPRT'
     QUIT_COMMAND = 'QUIT'
     RETR_COMMAND = 'RETR'
+    STOR_COMMAND = 'STOR'
 
     def __init__(self, debug=False):
         self._debug = debug
@@ -128,6 +129,10 @@ class FtpClient(object):
             if not data:
                 break
         return total_data
+
+    def _write_to_data_connection(self, content):
+        self._data_connection.sendall(content)
+        self._data_connection.close()
 
     def connect(self, host=None):
         """
@@ -256,6 +261,7 @@ class FtpClient(object):
         retr_data = self._receive_command_data()
         data = data + retr_data
 
+        local_file = None
         if not retr_data.startswith('550'):
             content = self._read_from_data_connection()
 
@@ -269,3 +275,32 @@ class FtpClient(object):
             data = data + self._receive_command_data()
 
         return data, local_file
+
+    def store(self, local_filename, filename):
+        """
+        Perform STOR command on connected host.
+
+        Args:
+            local_filename (str): Name of local file to send.
+            filename (str): Name of remote file to create.
+
+        Returns:
+            The message from the host if successful.
+        """
+        self._check_is_connected()
+        self._check_is_authenticated()
+
+        data = self._open_data_connection()
+
+        try:
+            local_file = open(local_filename, 'r')
+            self._send_command(FtpClient.STOR_COMMAND, filename)
+            data = data + self._receive_command_data()
+            self._write_to_data_connection(local_file.read())
+            local_file.close()
+        except IOError as e:
+            raise FtpClient.LocalIOException(e.strerror)
+
+        data = data + self._receive_command_data()
+
+        return data
