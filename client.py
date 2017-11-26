@@ -59,8 +59,6 @@ class FtpClient(object):
 
     def _reset_sockets(self, drop_existing=False):
         if drop_existing:
-            print('Dropping existing connection to {}:{}'
-                  .format(self.host, FtpClient.PORT))
             self._command_socket.close()
             self._data_socket.close()
         self._command_socket = socket.socket()
@@ -134,7 +132,6 @@ class FtpClient(object):
             return self.connect(host)
 
         try:
-            print 'Connecting to {}:{}'.format(host, FtpClient.PORT)
             self._command_socket.connect((host, FtpClient.PORT))
             self.host = host
         except socket.timeout:
