@@ -67,20 +67,27 @@ class FtpClient(object):
         self._debug = debug
         self._reset_sockets()
 
-    def _reset_sockets(self, drop_existing=False):
-        if drop_existing:
-            self._command_socket.close()
-            self._data_socket.close()
-        self._command_socket = socket.socket()
-        self._command_socket.settimeout(FtpClient.SOCKET_TIMEOUT_SECONDS)
-        self.host = None
-        self.user = None
-        self._data_socket = socket.socket()
-        self._data_connection = None
-
     def _log(self, info):
         if self._debug:
             print('debug: {}'.format(info))
+
+    def _reset_sockets(self):
+        self._reset_command_socket()
+        self._reset_data_socket()
+        self.host = None
+        self.user = None
+
+    def _reset_command_socket(self):
+        if getattr(self, 'host', None) is not None:
+            self._command_socket.close()
+        self._command_socket = socket.socket()
+        self._command_socket.settimeout(FtpClient.SOCKET_TIMEOUT_SECONDS)
+
+    def _reset_data_socket(self):
+        if getattr(self, '_data_socket_listening', False):
+            self._data_socket.close()
+        self._data_socket = socket.socket()
+        self._data_socket_listening = False
 
     def _send_command(self, command, *args):
         for a in args:
@@ -110,9 +117,10 @@ class FtpClient(object):
         self._data_port = self._data_port + 1
         self._data_socket.bind(('', self._data_port))
         self._data_socket.listen(1)
+        self._data_socket_listening = True
 
     def _open_data_connection(self):
-        if self._data_connection is None:
+        if not self._data_socket_listening:
             self._open_data_socket()
         self._send_command(FtpClient.EPRT_COMMAND, '|1|{}|{}|'
                            .format(self._data_address, self._data_port))
@@ -128,6 +136,7 @@ class FtpClient(object):
             total_data = total_data + data
             if not data:
                 break
+        self._data_connection.close()
         return total_data
 
     def _write_to_data_connection(self, content):
@@ -148,14 +157,13 @@ class FtpClient(object):
         host = host or 'localhost'
 
         if self.host is not None:
-            self._reset_sockets(drop_existing=True)
-            return self.connect(host)
+            self._reset_sockets()
 
         try:
             self._command_socket.connect((host, FtpClient.PORT))
             self.host = host
         except socket.timeout:
-            self._reset_sockets(drop_existing=True)
+            self._reset_sockets()
             raise FtpClient.TimeoutException(host)
 
         return self._receive_command_data()
@@ -236,7 +244,7 @@ class FtpClient(object):
 
         self._send_command(FtpClient.QUIT_COMMAND)
         data = self._receive_command_data()
-        self._reset_sockets(drop_existing=True)
+        self._reset_sockets()
 
         return data
 
