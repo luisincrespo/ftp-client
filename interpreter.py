@@ -84,3 +84,18 @@ class FtpsInterpreter(Cmd):
         except FtpClient.NotAuthenticatedException as e:
             print e.msg
             print('Please authenticate using the `login` command.')
+
+    def do_disconnect(self, *args):
+        """
+        Command to disconnect from connected FTP(S) host.
+        """
+        try:
+            response = self._ftp_client.disconnect()
+            print response
+        except FtpClient.TimeoutException as e:
+            print e.msg
+        except FtpClient.NotConnectedException as e:
+            print e.msg
+            print('Please connect to an FTP(S) server using the `connect`'
+                  ' command.')
+        self._update_prompt()

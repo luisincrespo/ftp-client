@@ -51,6 +51,7 @@ class FtpClient(object):
     USER_COMMAND = 'USER'
     PASS_COMMAND = 'PASS'
     EPRT_COMMAND = 'EPRT'
+    QUIT_COMMAND = 'QUIT'
 
     def __init__(self, debug=False):
         self._debug = debug
@@ -198,5 +199,20 @@ class FtpClient(object):
         if not list_data.startswith('550'):
             data = data + self._receive_data(data_connection=True)
             data = data + self._receive_data()
+
+        return data
+
+    def disconnect(self):
+        """
+        Perform QUIT command (disconnect) on connected host.
+
+        Returns:
+            Good bye message from host if connected.
+        """
+        self._check_is_connected()
+
+        self._send_command(FtpClient.QUIT_COMMAND)
+        data = self._receive_data()
+        self._reset_sockets(drop_existing=True)
 
         return data
