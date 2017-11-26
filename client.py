@@ -43,6 +43,14 @@ class FtpClient(object):
             super(FtpClient.NotAuthenticatedException, self).__init__()
             self.msg = 'Not authenticated.'
 
+    class LocalIOException(IOError):
+        """
+        Exception raised when something goes wrong during local IO operations.
+        """
+        def __init__(self, msg):
+            super(FtpClient.LocalIOException, self).__init__()
+            self.msg = 'Local IO error - {}'.format(msg)
+
     PORT = 21
     SOCKET_TIMEOUT_SECONDS = 5
     SOCKET_RCV_BYTES = 4096
@@ -52,6 +60,7 @@ class FtpClient(object):
     PASS_COMMAND = 'PASS'
     EPRT_COMMAND = 'EPRT'
     QUIT_COMMAND = 'QUIT'
+    RETR_COMMAND = 'RETR'
 
     def __init__(self, debug=False):
         self._debug = debug
@@ -81,11 +90,8 @@ class FtpClient(object):
         except socket.timeout:
             raise FtpClient.TimeoutException(self.host)
 
-    def _receive_data(self, data_connection=False):
-        if data_connection:
-            data = self._data_connection.recv(FtpClient.SOCKET_RCV_BYTES)
-        else:
-            data = self._command_socket.recv(FtpClient.SOCKET_RCV_BYTES)
+    def _receive_command_data(self):
+        data = self._command_socket.recv(FtpClient.SOCKET_RCV_BYTES)
         self._log('received data - {}'.format(data))
         return data
 
@@ -111,8 +117,17 @@ class FtpClient(object):
                            .format(self._data_address, self._data_port))
         self._data_connection, address = self._data_socket.accept()
         self._log('opened data connection on {}'.format(address))
-        data = self._receive_data()
+        data = self._receive_command_data()
         return data
+
+    def _read_from_data_connection(self):
+        total_data = ''
+        while True:
+            data = self._data_connection.recv(FtpClient.SOCKET_RCV_BYTES)
+            total_data = total_data + data
+            if not data:
+                break
+        return total_data
 
     def connect(self, host=None):
         """
@@ -138,7 +153,7 @@ class FtpClient(object):
             self._reset_sockets(drop_existing=True)
             raise FtpClient.TimeoutException(host)
 
-        return self._receive_data()
+        return self._receive_command_data()
 
     def login(self, user, password):
         """
@@ -154,10 +169,10 @@ class FtpClient(object):
         self._check_is_connected()
 
         self._send_command(FtpClient.USER_COMMAND, user)
-        self._receive_data()
+        self._receive_command_data()
 
         self._send_command(FtpClient.PASS_COMMAND, password)
-        data = self._receive_data()
+        data = self._receive_command_data()
 
         if data.startswith('230'):
             self.user = user
@@ -196,12 +211,12 @@ class FtpClient(object):
         else:
             self._send_command(FtpClient.LIST_COMMAND)
 
-        list_data = self._receive_data()
+        list_data = self._receive_command_data()
         data = data + list_data
 
         if not list_data.startswith('550'):
-            data = data + self._receive_data(data_connection=True)
-            data = data + self._receive_data()
+            data = data + self._read_from_data_connection()
+            data = data + self._receive_command_data()
 
         return data
 
@@ -215,7 +230,42 @@ class FtpClient(object):
         self._check_is_connected()
 
         self._send_command(FtpClient.QUIT_COMMAND)
-        data = self._receive_data()
+        data = self._receive_command_data()
         self._reset_sockets(drop_existing=True)
 
         return data
+
+    def retrieve(self, filename, local_filename):
+        """
+        Perform RETR command on connected host.
+
+        Args:
+            filename (str): Name of file to retrieve.
+            local_filename (str): Name of local file to create.
+
+        Returns:
+            If successful, the tuple containing the message from the host,
+            and the file descriptor for the new file.
+        """
+        self._check_is_connected()
+        self._check_is_authenticated()
+
+        data = self._open_data_connection()
+
+        self._send_command(FtpClient.RETR_COMMAND, filename)
+        retr_data = self._receive_command_data()
+        data = data + retr_data
+
+        if not retr_data.startswith('550'):
+            content = self._read_from_data_connection()
+
+            try:
+                local_file = open(local_filename, 'w+')
+                local_file.write(content)
+                local_file.close()
+            except IOError as e:
+                raise FtpClient.LocalIOException(e.strerror)
+
+            data = data + self._receive_command_data()
+
+        return data, local_file

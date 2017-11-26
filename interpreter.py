@@ -108,3 +108,30 @@ class FtpsInterpreter(Cmd):
             print('Please connect to an FTP(S) server using the `connect`'
                   ' command.')
         self._update_prompt()
+
+    def do_retrieve(self, *args):
+        filename = ''
+        while not filename:
+            filename = raw_input('File: ')
+        local_filename = ''
+        while not local_filename:
+            local_filename = raw_input('Local file: ')
+
+        try:
+            response, local_file = self._ftp_client.retrieve(filename, 
+                                                             local_filename)
+            print response
+            print 'Local file created {}'.format(local_file.name)
+        except FtpClient.TimeoutException as e:
+            print e.msg
+        except FtpClient.NotConnectedException as e:
+            print e.msg
+            print('Please connect to an FTP(S) server using the `connect`'
+                  ' command.')
+        except FtpClient.NotAuthenticatedException as e:
+            print e.msg
+            print('Please authenticate using the `login` command.')
+        except FtpClient.LocalIOException as e:
+            print e.msg
+            print('Something went wrong trying to retrieve the file,'
+                  ' please try again.')
