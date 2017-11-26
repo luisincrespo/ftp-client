@@ -135,6 +135,7 @@ class FtpClient(object):
             self._command_socket.connect((host, FtpClient.PORT))
             self.host = host
         except socket.timeout:
+            self._reset_sockets(drop_existing=True)
             raise FtpClient.TimeoutException(host)
 
         return self._receive_data()
