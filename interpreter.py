@@ -62,7 +62,16 @@ class FtpsInterpreter(Cmd):
         """
         Command to logout the current user from the connected FTP(S) host.
         """
-        self._ftp_client.logout()
+        try:
+            self._ftp_client.logout()
+            print 'Logged out.'
+        except FtpClient.NotConnectedException as e:
+            print e.msg
+            print('Please connect to an FTP(S) server using the `connect`'
+                  ' command.')
+        except FtpClient.NotAuthenticatedException as e:
+            print e.msg
+            print('Please authenticate using the `login` command.')
         self._update_prompt()
 
     def do_list(self, filename):

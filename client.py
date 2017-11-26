@@ -169,6 +169,11 @@ class FtpClient(object):
         return data
 
     def logout(self):
+        """
+        Clear info about currently logged user on connected host.
+        """
+        self._check_is_connected()
+        self._check_is_authenticated()
         self.user = None
 
     def list(self, filename=None):
