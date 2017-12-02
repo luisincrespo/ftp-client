@@ -46,6 +46,9 @@ class FtpClient(object):
         """
         Exception raised when FTP(S) commands are performed but the client
         is not currently connected to a host.
+
+        Attributes:
+        msg (str): Human readable string describing the exception.
         """
         def __init__(self):
             super(FtpClient.NotConnectedException, self).__init__()
@@ -55,6 +58,9 @@ class FtpClient(object):
         """
         Exception raised when FTP(S) commands are performed but the client
         is not currently authenticated for a user in the host.
+
+        Attributes:
+        msg (str): Human readable string describing the exception.
         """
         def __init__(self):
             super(FtpClient.NotAuthenticatedException, self).__init__()
@@ -63,6 +69,9 @@ class FtpClient(object):
     class LocalIOException(IOError):
         """
         Exception raised when something goes wrong during local IO operations.
+
+        Attributes:
+        msg (str): Human readable string describing the exception.
         """
         def __init__(self, msg):
             super(FtpClient.LocalIOException, self).__init__()
@@ -190,6 +199,9 @@ class FtpClient(object):
         except socket.timeout:
             self._reset_sockets()
             raise FtpClient.TimeoutException(host)
+        except socket.gaierror:
+            self._reset_sockets()
+            raise FtpClient.UnknownHostException(host)
 
         return self._receive_command_data()
 
