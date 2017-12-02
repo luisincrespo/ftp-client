@@ -1,3 +1,4 @@
+import os
 from cmd import Cmd
 
 from client import FtpClient
@@ -107,7 +108,15 @@ class FtpsInterpreter(Cmd):
 
         response = self._perform_ftp_command('retrieve', filename,
                                              local_filename)
+
+        local_file = None
+        if isinstance(response, tuple):
+            response, local_file = response
+
         print response
+        if local_file is not None:
+            local_path = os.path.realpath(local_file.name)
+            print 'Local file created: {}'.format(local_path)
 
     def do_store(self, *args):
         """
