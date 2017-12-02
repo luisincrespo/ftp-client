@@ -162,3 +162,13 @@ class FtpsInterpreter(Cmd):
         """
         response = self._perform_ftp_command('mkdir', directory)
         print response
+
+    def do_delete(self, filename):
+        """
+        Command to remove file on the connected FTP(S) host.
+
+        Args:
+            filename (str): Name of file to delete.
+        """
+        response = self._perform_ftp_command('delete', filename)
+        print response

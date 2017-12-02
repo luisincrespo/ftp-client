@@ -67,6 +67,7 @@ class FtpClient(object):
     PWD_COMMAND = 'PWD'
     CWD_COMMAND = 'CWD'
     MKD_COMMAND = 'MKD'
+    DELE_COMMAND = 'DELE'
 
     def __init__(self, debug=False):
         self._debug = debug
@@ -364,6 +365,24 @@ class FtpClient(object):
         self._check_is_authenticated()
 
         self._send_command(FtpClient.MKD_COMMAND, directory)
+        data = self._receive_command_data()
+
+        return data
+
+    def delete(self, filename):
+        """
+        Perform DELE command on connected host.
+
+        Args:
+            filename (str): Name of file to delete.
+
+        Returns:
+            Message from host.
+        """
+        self._check_is_connected()
+        self._check_is_authenticated()
+
+        self._send_command(FtpClient.DELE_COMMAND, filename)
         data = self._receive_command_data()
 
         return data
