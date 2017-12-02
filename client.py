@@ -66,6 +66,7 @@ class FtpClient(object):
     STOR_COMMAND = 'STOR'
     PWD_COMMAND = 'PWD'
     CWD_COMMAND = 'CWD'
+    MKD_COMMAND = 'MKD'
 
     def __init__(self, debug=False):
         self._debug = debug
@@ -345,6 +346,24 @@ class FtpClient(object):
         self._check_is_authenticated()
 
         self._send_command(FtpClient.CWD_COMMAND, directory)
+        data = self._receive_command_data()
+
+        return data
+
+    def mkdir(self, directory):
+        """
+        Perform MKD command on connected host.
+
+        Args:
+            directory (str): Name of directory to create.
+
+        Returns:
+            Message from host.
+        """
+        self._check_is_connected()
+        self._check_is_authenticated()
+
+        self._send_command(FtpClient.MKD_COMMAND, directory)
         data = self._receive_command_data()
 
         return data
