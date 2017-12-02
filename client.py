@@ -8,6 +8,8 @@ class FtpClient(object):
     Attributes:
     host (str): The host to which the client is connected to, if connected,
                 None otherwise.
+    user (str): The username of the logged in user, if logged in, None
+                otherwise.
     """
 
     class TimeoutException(socket.timeout):
@@ -154,7 +156,7 @@ class FtpClient(object):
                         default to `localhost`. (Optional)
 
         Returns:
-            The welcome message from the host if successful.
+            Message from host.
         """
         host = host or 'localhost'
 
@@ -179,7 +181,7 @@ class FtpClient(object):
             password (str): The password.
 
         Returns:
-            The success message from the host if successful.
+            Message from host.
         """
         self._check_is_connected()
 
@@ -213,8 +215,7 @@ class FtpClient(object):
                             for. (Optional)
 
         Returns:
-            Information about the specified file or directory, or the current
-            directory if not specified.
+            Message and data from host.
         """
         self._check_is_connected()
         self._check_is_authenticated()
@@ -240,7 +241,7 @@ class FtpClient(object):
         Perform QUIT command (disconnect) on connected host.
 
         Returns:
-            Good bye message from host if connected.
+            Message from host.
         """
         self._check_is_connected()
 
@@ -295,7 +296,7 @@ class FtpClient(object):
             filename (str): Name of remote file to create.
 
         Returns:
-            The message from the host if successful.
+            Message from host.
         """
         self._check_is_connected()
         self._check_is_authenticated()
@@ -320,7 +321,7 @@ class FtpClient(object):
         Perform PWD command on connected host.
 
         Returns:
-            Current directory on connected host.
+            Message from host.
         """
         self._check_is_connected()
         self._check_is_authenticated()
@@ -329,6 +330,7 @@ class FtpClient(object):
         data = self._receive_command_data()
 
         return data
+
     def cwd(self, directory):
         """
         Perform CWD command on connected host.
