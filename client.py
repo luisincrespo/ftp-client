@@ -66,6 +66,7 @@ class FtpClient(object):
     STOR_COMMAND = 'STOR'
     PWD_COMMAND = 'PWD'
     CWD_COMMAND = 'CWD'
+    CDUP_COMMAND = 'CDUP'
     MKD_COMMAND = 'MKD'
     DELE_COMMAND = 'DELE'
     RMD_COMMAND = 'RMD'
@@ -348,6 +349,21 @@ class FtpClient(object):
         self._check_is_authenticated()
 
         self._send_command(FtpClient.CWD_COMMAND, directory)
+        data = self._receive_command_data()
+
+        return data
+
+    def cdup(self):
+        """
+        Perform CDUP command on connected host.
+
+        Returns:
+            Message from host.
+        """
+        self._check_is_connected()
+        self._check_is_authenticated()
+
+        self._send_command(FtpClient.CDUP_COMMAND)
         data = self._receive_command_data()
 
         return data

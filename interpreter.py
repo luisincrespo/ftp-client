@@ -153,6 +153,14 @@ class FtpsInterpreter(Cmd):
         response = self._perform_ftp_command('cwd', directory)
         print response
 
+    def do_cdup(self, *args):
+        """
+        Command to set parent directory as current working directory
+        on the connected FTP(S) host.
+        """
+        response = self._perform_ftp_command('cdup')
+        print response
+
     def do_mkdir(self, directory):
         """
         Command to create directory on the connected FTP(S) host.
