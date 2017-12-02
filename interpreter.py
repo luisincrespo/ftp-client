@@ -21,6 +21,26 @@ class FtpsInterpreter(Cmd):
                 prompt = '{} ({})'.format(prompt, self._ftp_client.user)
         self.prompt = '{} > '.format(prompt)
 
+    def _perform_ftp_command(self, command, *args):
+        method = getattr(self._ftp_client, command)
+        try:
+            response = method(*args)
+        except FtpClient.TimeoutException as e:
+            response = e.msg
+        except FtpClient.NotConnectedException as e:
+            response = e.msg
+            response = ('{}\nPlease connect to an FTP(S) server using'
+                        ' the `connect` command').format(response)
+        except FtpClient.NotAuthenticatedException as e:
+            response = e.msg
+            response = ('{}\nPlease authenticate using the `login` command.')\
+                .format(response)
+        except FtpClient.LocalIOException as e:
+            response = e.msg
+            response = ('{}\nSomething went wrong trying to {} the file,'
+                        ' please try again.').format(response, command)
+        return response
+
     def do_connect(self, host):
         """
         Command to connect to an FTP(S) server in the specified host.
@@ -28,11 +48,8 @@ class FtpsInterpreter(Cmd):
         Args:
             host (str): The host to connect to.
         """
-        try:
-            response = self._ftp_client.connect(host)
-            print response
-        except FtpClient.TimeoutException as e:
-            print e.msg
+        response = self._perform_ftp_command('connect', host)
+        print response
         self._update_prompt()
 
     def do_login(self, *args):
@@ -46,32 +63,16 @@ class FtpsInterpreter(Cmd):
         while not password:
             password = raw_input('Password: ')
 
-        try:
-            response = self._ftp_client.login(user, password)
-            print response
-        except FtpClient.TimeoutException as e:
-            print e.msg
-        except FtpClient.NotConnectedException as e:
-            print e.msg
-            print('Please connect to an FTP(S) server using the `connect`'
-                  ' command.')
-
+        response = self._perform_ftp_command('login', user, password)
+        print response
         self._update_prompt()
 
     def do_logout(self, *args):
         """
         Command to logout the current user from the connected FTP(S) host.
         """
-        try:
-            self._ftp_client.logout()
-            print 'Logged out.'
-        except FtpClient.NotConnectedException as e:
-            print e.msg
-            print('Please connect to an FTP(S) server using the `connect`'
-                  ' command.')
-        except FtpClient.NotAuthenticatedException as e:
-            print e.msg
-            print('Please authenticate using the `login` command.')
+        response = self._perform_ftp_command('logout')
+        print response
         self._update_prompt()
 
     def do_list(self, filename):
@@ -81,32 +82,15 @@ class FtpsInterpreter(Cmd):
         Args:
             filename (str): Name of file or directory to retrieve info for.
         """
-        try:
-            response = self._ftp_client.list(filename)
-            print response
-        except FtpClient.TimeoutException as e:
-            print e.msg
-        except FtpClient.NotConnectedException as e:
-            print e.msg
-            print('Please connect to an FTP(S) server using the `connect`'
-                  ' command.')
-        except FtpClient.NotAuthenticatedException as e:
-            print e.msg
-            print('Please authenticate using the `login` command.')
+        response = self._perform_ftp_command('list', filename)
+        print response
 
     def do_disconnect(self, *args):
         """
         Command to disconnect from connected FTP(S) host.
         """
-        try:
-            response = self._ftp_client.disconnect()
-            print response
-        except FtpClient.TimeoutException as e:
-            print e.msg
-        except FtpClient.NotConnectedException as e:
-            print e.msg
-            print('Please connect to an FTP(S) server using the `connect`'
-                  ' command.')
+        response = self._perform_ftp_command('disconnect')
+        print response
         self._update_prompt()
 
     def do_retrieve(self, *args):
@@ -121,25 +105,9 @@ class FtpsInterpreter(Cmd):
         while not local_filename:
             local_filename = raw_input('Local file: ')
 
-        try:
-            response, local_file = self._ftp_client.retrieve(filename,
-                                                             local_filename)
-            print response
-            if local_file is not None:
-                print 'Local file created {}'.format(local_file.name)
-        except FtpClient.TimeoutException as e:
-            print e.msg
-        except FtpClient.NotConnectedException as e:
-            print e.msg
-            print('Please connect to an FTP(S) server using the `connect`'
-                  ' command.')
-        except FtpClient.NotAuthenticatedException as e:
-            print e.msg
-            print('Please authenticate using the `login` command.')
-        except FtpClient.LocalIOException as e:
-            print e.msg
-            print('Something went wrong trying to retrieve the file,'
-                  ' please try again.')
+        response = self._perform_ftp_command('retrieve', filename,
+                                             local_filename)
+        print response
 
     def do_store(self, *args):
         """
@@ -152,19 +120,6 @@ class FtpsInterpreter(Cmd):
         while not filename:
             filename = raw_input('Remote file: ')
 
-        try:
-            response = self._ftp_client.store(local_filename, filename)
-            print response
-        except FtpClient.TimeoutException as e:
-            print e.msg
-        except FtpClient.NotConnectedException as e:
-            print e.msg
-            print('Please connect to an FTP(S) server using the `connect`'
-                  ' command.')
-        except FtpClient.NotAuthenticatedException as e:
-            print e.msg
-            print('Please authenticate using the `login` command.')
-        except FtpClient.LocalIOException as e:
-            print e.msg
-            print('Something went wrong trying to store the file,'
-                  ' please try again.')
+        response = self._perform_ftp_command('store', local_filename,
+                                             filename)
+        print response
