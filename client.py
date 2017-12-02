@@ -325,10 +325,10 @@ class FtpClient(object):
         self._check_is_connected()
         self._check_is_authenticated()
 
-        data = self._open_data_connection()
-
         self._send_command(FtpClient.PWD_COMMAND)
-        data = data + self._receive_command_data()
+        data = self._receive_command_data()
+
+        return data
     def cwd(self, directory):
         """
         Perform CWD command on connected host.
