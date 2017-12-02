@@ -190,3 +190,18 @@ class FtpsInterpreter(Cmd):
         """
         response = self._perform_ftp_command('rmdir', directory)
         print response
+
+    def do_rename(self, *args):
+        """
+        Command to rename a file or directory on the connected FTP(S) host.
+        """
+        original_filename = ''
+        while not original_filename:
+            original_filename = raw_input('Name of original remote file: ')
+        new_filename = ''
+        while not new_filename:
+            new_filename = raw_input('New name for remote file: ')
+
+        response = self._perform_ftp_command('rename', original_filename,
+                                             new_filename)
+        print response

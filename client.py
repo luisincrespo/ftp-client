@@ -70,6 +70,8 @@ class FtpClient(object):
     MKD_COMMAND = 'MKD'
     DELE_COMMAND = 'DELE'
     RMD_COMMAND = 'RMD'
+    RNFR_COMMAND = 'RNFR'
+    RNTO_COMMAND = 'RNTO'
 
     def __init__(self, debug=False):
         self._debug = debug
@@ -419,5 +421,29 @@ class FtpClient(object):
 
         self._send_command(FtpClient.RMD_COMMAND, directory)
         data = self._receive_command_data()
+
+        return data
+
+    def rename(self, from_name, to_name):
+        """
+        Perform RNFR + RNTO (rename file or directory) command on connected
+        host.
+
+        Args:
+            from_name (str): Original name of file or directory.
+            to_name (str): New name for file or directory.
+
+        Returns:
+            Message from host.
+        """
+        self._check_is_connected()
+        self._check_is_authenticated()
+
+        self._send_command(FtpClient.RNFR_COMMAND, from_name)
+        data = self._receive_command_data()
+
+        if not data.startswith('550'):
+            self._send_command(FtpClient.RNTO_COMMAND, to_name)
+            data = data + self._receive_command_data()
 
         return data
