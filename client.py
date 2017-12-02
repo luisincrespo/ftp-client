@@ -63,6 +63,7 @@ class FtpClient(object):
     RETR_COMMAND = 'RETR'
     STOR_COMMAND = 'STOR'
     PWD_COMMAND = 'PWD'
+    CWD_COMMAND = 'CWD'
 
     def __init__(self, debug=False):
         self._debug = debug
@@ -328,5 +329,20 @@ class FtpClient(object):
 
         self._send_command(FtpClient.PWD_COMMAND)
         data = data + self._receive_command_data()
+    def cwd(self, directory):
+        """
+        Perform CWD command on connected host.
+
+        Args:
+            directory (str): Name of directory to work on.
+
+        Returns:
+            Message from host.
+        """
+        self._check_is_connected()
+        self._check_is_authenticated()
+
+        self._send_command(FtpClient.CWD_COMMAND, directory)
+        data = self._receive_command_data()
 
         return data

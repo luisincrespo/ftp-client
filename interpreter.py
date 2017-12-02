@@ -130,3 +130,13 @@ class FtpsInterpreter(Cmd):
         """
         response = self._perform_ftp_command('pwd')
         print response
+
+    def do_cwd(self, directory):
+        """
+        Command to change current directory on the connected FTP(S) host.
+
+        Args:
+            directory (str): Name of directory to work on.
+        """
+        response = self._perform_ftp_command('cwd', directory)
+        print response
