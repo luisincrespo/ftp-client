@@ -12,6 +12,21 @@ class FtpClient(object):
                 otherwise.
     """
 
+    class UnknownHostException(socket.gaierror):
+        """
+        Exception raised when an FTP(S) host is unreachable.
+
+        Args:
+        host (str): Unreachable host.
+
+        Attributes:
+        msg (str): Human readable string describing the exception.
+        """
+        def __init__(self, host):
+            super(FtpClient.UnknownHostException, self).__init__()
+            self.msg = 'Connection to {}:{} failed. Host not reachable.'\
+                .format(host, FtpClient.PORT)
+
     class TimeoutException(socket.timeout):
         """
         Exception raised when the FTP client socket connection has timed out.

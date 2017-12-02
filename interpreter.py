@@ -26,7 +26,8 @@ class FtpsInterpreter(Cmd):
         method = getattr(self._ftp_client, command)
         try:
             response = method(*args)
-        except FtpClient.TimeoutException as e:
+        except (FtpClient.TimeoutException,
+                FtpClient.UnknownHostException) as e:
             response = e.msg
         except FtpClient.NotConnectedException as e:
             response = e.msg
