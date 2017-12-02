@@ -123,3 +123,10 @@ class FtpsInterpreter(Cmd):
         response = self._perform_ftp_command('store', local_filename,
                                              filename)
         print response
+
+    def do_pwd(self, *args):
+        """
+        Command to retrieve the current directory on the connected FTP(S) host.
+        """
+        response = self._perform_ftp_command('pwd')
+        print response

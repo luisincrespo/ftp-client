@@ -62,6 +62,7 @@ class FtpClient(object):
     QUIT_COMMAND = 'QUIT'
     RETR_COMMAND = 'RETR'
     STOR_COMMAND = 'STOR'
+    PWD_COMMAND = 'PWD'
 
     def __init__(self, debug=False):
         self._debug = debug
@@ -309,6 +310,23 @@ class FtpClient(object):
         except IOError as e:
             raise FtpClient.LocalIOException(e.strerror)
 
+        data = data + self._receive_command_data()
+
+        return data
+
+    def pwd(self):
+        """
+        Perform PWD command on connected host.
+
+        Returns:
+            Current directory on connected host.
+        """
+        self._check_is_connected()
+        self._check_is_authenticated()
+
+        data = self._open_data_connection()
+
+        self._send_command(FtpClient.PWD_COMMAND)
         data = data + self._receive_command_data()
 
         return data
