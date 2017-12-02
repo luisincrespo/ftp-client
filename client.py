@@ -68,6 +68,7 @@ class FtpClient(object):
     CWD_COMMAND = 'CWD'
     MKD_COMMAND = 'MKD'
     DELE_COMMAND = 'DELE'
+    RMD_COMMAND = 'RMD'
 
     def __init__(self, debug=False):
         self._debug = debug
@@ -369,7 +370,7 @@ class FtpClient(object):
 
         return data
 
-    def delete(self, filename):
+    def rm(self, filename):
         """
         Perform DELE command on connected host.
 
@@ -383,6 +384,24 @@ class FtpClient(object):
         self._check_is_authenticated()
 
         self._send_command(FtpClient.DELE_COMMAND, filename)
+        data = self._receive_command_data()
+
+        return data
+
+    def rmdir(self, directory):
+        """
+        Perform RMD command on connected host.
+
+        Args:
+            directory (str): Name of directory to delete.
+
+        Returns:
+            Message from host.
+        """
+        self._check_is_connected()
+        self._check_is_authenticated()
+
+        self._send_command(FtpClient.RMD_COMMAND, directory)
         data = self._receive_command_data()
 
         return data
