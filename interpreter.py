@@ -42,6 +42,9 @@ class FtpsInterpreter(Cmd):
                         ' please try again.').format(response, command)
         return response
 
+    def emptyline(self):
+        pass
+
     def do_connect(self, host):
         """
         Command to connect to an FTP(S) server in the specified host.
