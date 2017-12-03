@@ -8,11 +8,11 @@ class FtpsInterpreter(Cmd):
     """
     FTP command line utility that supports non-secure and secure connections.
     """
-    def __init__(self):
+    def __init__(self, debug=False):
         Cmd.__init__(self)
         self.intro = 'FTP(S) Client'
         self.prompt = 'ftp(s) > '
-        self._ftp_client = FtpClient()
+        self._ftp_client = FtpClient(debug=debug)
 
     def _update_prompt(self):
         prompt = 'ftp(s)'

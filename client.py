@@ -134,7 +134,7 @@ class FtpClient(object):
 
     def _receive_command_data(self):
         data = self._command_socket.recv(FtpClient.SOCKET_RCV_BYTES)
-        self._log('received data - {}'.format(data))
+        self._log('received command data - {}'.format(data))
         return data
 
     def _check_is_connected(self):
@@ -171,9 +171,11 @@ class FtpClient(object):
             if not data:
                 break
         self._data_connection.close()
+        self._log('received data - {}'.format(total_data))
         return total_data
 
     def _write_to_data_connection(self, content):
+        self._log('sending data - {}'.format(content))
         self._data_connection.sendall(content)
         self._data_connection.close()
 
@@ -194,6 +196,7 @@ class FtpClient(object):
             self._reset_sockets()
 
         try:
+            self._log('connecting to {}:{}'.format(host, FtpClient.PORT))
             self._command_socket.connect((host, FtpClient.PORT))
             self.host = host
         except socket.timeout:
@@ -237,6 +240,7 @@ class FtpClient(object):
         """
         self._check_is_connected()
         self._check_is_authenticated()
+        self._log('logging out {}'.format(self.user))
         self.user = None
 
     def list(self, filename=None):
