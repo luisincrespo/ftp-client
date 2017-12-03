@@ -97,6 +97,10 @@ class FtpClient(object):
     RNFR_COMMAND = 'RNFR'
     RNTO_COMMAND = 'RNTO'
 
+    STATUS_230 = '230'
+    STATUS_550 = '550'
+    STATUS_530 = '530'
+
     def __init__(self, debug=False):
         self._debug = debug
         self._reset_sockets()
@@ -227,9 +231,9 @@ class FtpClient(object):
         self._send_command(FtpClient.PASS_COMMAND, password)
         data = self._receive_command_data()
 
-        if data.startswith('230'):
+        if data.startswith(FtpClient.STATUS_230):
             self.user = user
-        elif data.startswith('530'):
+        elif data.startswith(FtpClient.STATUS_530):
             self.user = None
 
         return data
@@ -267,7 +271,7 @@ class FtpClient(object):
         list_data = self._receive_command_data()
         data = data + list_data
 
-        if not list_data.startswith('550'):
+        if not list_data.startswith(FtpClient.STATUS_550):
             data = data + self._read_from_data_connection()
             data = data + self._receive_command_data()
 
@@ -310,7 +314,7 @@ class FtpClient(object):
         data = data + retr_data
 
         local_file = None
-        if not retr_data.startswith('550'):
+        if not retr_data.startswith(FtpClient.STATUS_550):
             content = self._read_from_data_connection()
 
             try:
@@ -473,7 +477,7 @@ class FtpClient(object):
         self._send_command(FtpClient.RNFR_COMMAND, from_name)
         data = self._receive_command_data()
 
-        if not data.startswith('550'):
+        if not data.startswith(FtpClient.STATUS_550):
             self._send_command(FtpClient.RNTO_COMMAND, to_name)
             data = data + self._receive_command_data()
 
