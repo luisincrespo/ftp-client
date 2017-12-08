@@ -3,7 +3,7 @@ import socket
 
 class FtpClient(object):
     """
-    FTP client that can be used for both non-secure and secure connections.
+    This class offers a simple interface to interact with an FTP server.
 
     Attributes:
     host (str): The host to which the client is connected to, if connected,
@@ -14,7 +14,7 @@ class FtpClient(object):
 
     class UnknownHostException(socket.gaierror):
         """
-        Exception raised when an FTP(S) host is unreachable.
+        Exception raised when an FTP host is unreachable.
 
         Args:
         host (str): Unreachable host.
@@ -44,7 +44,7 @@ class FtpClient(object):
 
     class NotConnectedException(Exception):
         """
-        Exception raised when FTP(S) commands are performed but the client
+        Exception raised when FTP commands are performed but the client
         is not currently connected to a host.
 
         Attributes:
@@ -56,7 +56,7 @@ class FtpClient(object):
 
     class NotAuthenticatedException(Exception):
         """
-        Exception raised when FTP(S) commands are performed but the client
+        Exception raised when FTP commands are performed but the client
         is not currently authenticated for a user in the host.
 
         Attributes:
@@ -185,7 +185,7 @@ class FtpClient(object):
 
     def connect(self, host=None):
         """
-        Connect to an FTP(S) server in the specified host.
+        Connect to an FTP server in the specified host.
 
         Args:
             host (str): The host to connect to. Falsy values

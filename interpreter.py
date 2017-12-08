@@ -4,18 +4,18 @@ from cmd import Cmd
 from client import FtpClient
 
 
-class FtpsInterpreter(Cmd):
+class FtpInterpreter(Cmd):
     """
-    FTP command line utility that supports non-secure and secure connections.
+    FTP client command line utility.
     """
     def __init__(self, debug=False):
         Cmd.__init__(self)
-        self.intro = 'FTP(S) Client'
-        self.prompt = 'ftp(s) > '
+        self.intro = 'FTP Client'
+        self.prompt = 'FTP > '
         self._ftp_client = FtpClient(debug=debug)
 
     def _update_prompt(self):
-        prompt = 'ftp(s)'
+        prompt = 'FTP'
         if self._ftp_client.host is not None:
             prompt = '{} {}'.format(prompt, self._ftp_client.host)
             if self._ftp_client.user is not None:
@@ -31,7 +31,7 @@ class FtpsInterpreter(Cmd):
             response = e.msg
         except FtpClient.NotConnectedException as e:
             response = e.msg
-            response = ('{}\nPlease connect to an FTP(S) server using'
+            response = ('{}\nPlease connect to an FTP server using'
                         ' the `connect` command').format(response)
         except FtpClient.NotAuthenticatedException as e:
             response = e.msg
@@ -48,7 +48,7 @@ class FtpsInterpreter(Cmd):
 
     def do_connect(self, host):
         """
-        Command to connect to an FTP(S) server in the specified host.
+        Command to connect to an FTP server in the specified host.
 
         Args:
             host (str): The host to connect to.
@@ -59,7 +59,7 @@ class FtpsInterpreter(Cmd):
 
     def do_login(self, *args):
         """
-        Command to login with user and password in the connected FTP(S) host.
+        Command to login with user and password in the connected FTP host.
         """
         user = ''
         while not user:
@@ -74,14 +74,14 @@ class FtpsInterpreter(Cmd):
 
     def do_logout(self, *args):
         """
-        Command to logout the current user from the connected FTP(S) host.
+        Command to logout the current user from the connected FTP host.
         """
         self._perform_ftp_command('logout')
         self._update_prompt()
 
     def do_list(self, filename):
         """
-        Command to perform LIST command on the connected FTP(S) host.
+        Command to perform LIST command on the connected FTP host.
 
         Args:
             filename (str): Name of file or directory to retrieve info for.
@@ -91,7 +91,7 @@ class FtpsInterpreter(Cmd):
 
     def do_disconnect(self, *args):
         """
-        Command to disconnect from connected FTP(S) host.
+        Command to disconnect from connected FTP host.
         """
         response = self._perform_ftp_command('disconnect')
         print response
@@ -99,7 +99,7 @@ class FtpsInterpreter(Cmd):
 
     def do_retrieve(self, *args):
         """
-        Command to retrieve a file from the connected FTP(S) host and store
+        Command to retrieve a file from the connected FTP host and store
         it locally.
         """
         filename = ''
@@ -123,7 +123,7 @@ class FtpsInterpreter(Cmd):
 
     def do_store(self, *args):
         """
-        Command to send a local file to the connected FTP(S) host.
+        Command to send a local file to the connected FTP host.
         """
         local_filename = ''
         while not local_filename:
@@ -138,14 +138,14 @@ class FtpsInterpreter(Cmd):
 
     def do_pwd(self, *args):
         """
-        Command to retrieve the current directory on the connected FTP(S) host.
+        Command to retrieve the current directory on the connected FTP host.
         """
         response = self._perform_ftp_command('pwd')
         print response
 
     def do_cwd(self, directory):
         """
-        Command to change current directory on the connected FTP(S) host.
+        Command to change current directory on the connected FTP host.
 
         Args:
             directory (str): Name of directory to work on.
@@ -156,14 +156,14 @@ class FtpsInterpreter(Cmd):
     def do_cdup(self, *args):
         """
         Command to set parent directory as current working directory
-        on the connected FTP(S) host.
+        on the connected FTP host.
         """
         response = self._perform_ftp_command('cdup')
         print response
 
     def do_mkdir(self, directory):
         """
-        Command to create directory on the connected FTP(S) host.
+        Command to create directory on the connected FTP host.
 
         Args:
             directory (str): Name of directory to create.
@@ -173,7 +173,7 @@ class FtpsInterpreter(Cmd):
 
     def do_rm(self, filename):
         """
-        Command to remove file on the connected FTP(S) host.
+        Command to remove file on the connected FTP host.
 
         Args:
             filename (str): Name of file to delete.
@@ -183,7 +183,7 @@ class FtpsInterpreter(Cmd):
 
     def do_rmdir(self, directory):
         """
-        Command to remove directory on the connected FTP(S) host.
+        Command to remove directory on the connected FTP host.
 
         Args:
             directory (str): Name of directory to delete.
@@ -193,7 +193,7 @@ class FtpsInterpreter(Cmd):
 
     def do_rename(self, *args):
         """
-        Command to rename a file or directory on the connected FTP(S) host.
+        Command to rename a file or directory on the connected FTP host.
         """
         original_filename = ''
         while not original_filename:
