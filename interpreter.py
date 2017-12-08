@@ -10,7 +10,8 @@ class FtpInterpreter(Cmd):
     """
     def __init__(self, debug=False):
         Cmd.__init__(self)
-        self.intro = 'FTP Client'
+        self.intro = ('FTP Client. Start typing help or ? to see available '
+                      'commands.')
         self.prompt = 'FTP > '
         self._ftp_client = FtpClient(debug=debug)
 
