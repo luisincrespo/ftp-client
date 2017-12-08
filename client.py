@@ -1,4 +1,5 @@
 import socket
+import errno
 
 
 class FtpClient(object):
@@ -11,6 +12,21 @@ class FtpClient(object):
     user (str): The username of the logged in user, if logged in, None
                 otherwise.
     """
+
+    class ConnectionRefusedException(socket.error):
+        """
+        Exception raised when an FTP host refuses a connection.
+
+        Args:
+        host (str): Host that refused connection.
+
+        Attributes:
+        msg (str): Human readable string describing the exception.
+        """
+        def __init__(self, host):
+            super(FtpClient.ConnectionRefusedException, self).__init__()
+            self.msg = 'Connection to {}:{} failed. Connection refused.'\
+                .format(host, FtpClient.PORT)
 
     class UnknownHostException(socket.gaierror):
         """
@@ -209,6 +225,9 @@ class FtpClient(object):
         except socket.gaierror:
             self._reset_sockets()
             raise FtpClient.UnknownHostException(host)
+        except socket.error as e:
+            if e.errno == errno.ECONNREFUSED:
+                raise FtpClient.ConnectionRefusedException(host)
 
         return self._receive_command_data()
 

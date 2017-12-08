@@ -28,7 +28,8 @@ class FtpInterpreter(Cmd):
         try:
             response = method(*args)
         except (FtpClient.TimeoutException,
-                FtpClient.UnknownHostException) as e:
+                FtpClient.UnknownHostException,
+                FtpClient.ConnectionRefusedException) as e:
             response = e.msg
         except FtpClient.NotConnectedException as e:
             response = e.msg
